@@ -49,7 +49,7 @@ object KafkaBuild extends Build {
         <exclude module="jmxtools"/>
         <exclude module="mail"/>
         <exclude module="jms"/>
-        <dependency org="org.apache.zookeeper" name="zookeeper" rev="3.3.4">
+        <dependency org="org.apache.zookeeper" name="zookeeper" rev="3.4.5">
           <exclude org="log4j" module="log4j"/>
           <exclude org="jline" module="jline"/>
         </dependency>
