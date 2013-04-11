@@ -26,7 +26,7 @@ object KafkaBuild extends Build {
   val buildNumber = SettingKey[String]("build-number", "Build number defaults to $BUILD_NUMBER environment variable")
   val releaseName = SettingKey[String]("release-name", "the full name of this release")
   val commonSettings = Seq(
-    organization := "org.apache",
+    organization := "org.apache.kafka",
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-g:none"),
     crossScalaVersions := Seq("2.8.0","2.8.2", "2.9.1", "2.9.2"),
     scalaVersion := "2.8.0",
