@@ -33,7 +33,6 @@ class Producer[K,V](val config: ProducerConfig,
   private val hasShutdown = new AtomicBoolean(false)
   private val queue = new LinkedBlockingQueue[KeyedMessage[K,V]](config.queueBufferingMaxMessages)
 
-  private val random = new Random
   private var sync: Boolean = true
   private var producerSendThread: ProducerSendThread[K,V] = null
   config.producerType match {
