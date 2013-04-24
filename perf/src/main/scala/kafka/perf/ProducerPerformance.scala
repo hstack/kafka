@@ -46,19 +46,28 @@ object ProducerPerformance extends Logging {
     val totalMessagesSent = new AtomicLong(0)
     val executor = Executors.newFixedThreadPool(config.numThreads)
     val allDone = new CountDownLatch(config.numThreads)
-    val startMs = System.currentTimeMillis
+
     val rand = new java.util.Random
 
     if(!config.hideHeader)
         println("start.time, end.time, compression, message.size, batch.size, total.data.sent.in.MB, MB.sec, " +
                         "total.data.sent.in.nMsg, nMsg.sec")
 
-    for(i <- 0 until config.numThreads) {
-      executor.execute(new ProducerThread(i, config, totalBytesSent, totalMessagesSent, allDone, rand))
+    def newProducerThread(numThreads: Int): ProducerPerformance.ProducerThread = {
+      new ProducerThread(numThreads, config, totalBytesSent, totalMessagesSent, allDone, rand)
+    }
+    def getProducerThreads(numThreads: Int):List[ProducerThread] = {
+      if (numThreads == 0) Nil
+      else List[ProducerThread](newProducerThread(numThreads)) ++ getProducerThreads(numThreads - 1)
     }
 
+    val producerThreads = getProducerThreads(config.numThreads);
+
+    val startMs = System.currentTimeMillis
+    producerThreads foreach (x => executor.execute(x))
     allDone.await()
     val endMs = System.currentTimeMillis
+
     val elapsedSecs = (endMs - startMs) / 1000.0
     val totalMBSent = (totalBytesSent.get * 1.0)/ (1024 * 1024)
     println(("%s, %s, %d, %d, %d, %.2f, %.4f, %d, %.4f").format(
@@ -191,7 +200,8 @@ object ProducerPerformance extends Logging {
     props.put("serializer.class", classOf[DefaultEncoder].getName.toString)
     props.put("key.serializer.class", classOf[NullEncoder[Long]].getName.toString)
 
-    
+    println(props)
+
     val producerConfig = new ProducerConfig(props)
     val producer = new Producer[Long, Array[Byte]](producerConfig)
     val seqIdNumDigit = 10   // no. of digits for max int value
@@ -260,7 +270,10 @@ object ProducerPerformance extends Logging {
         }
         j += 1
       }
-      producer.close()
+      // ideally we'd close here, but not account into the performance timing. Until we do proper timing we can
+      // avoid closing here (this JVM dies after each test)
+//      producer.close()
+
       totalBytesSent.addAndGet(bytesSent)
       totalMessagesSent.addAndGet(nSends)
       allDone.countDown()
