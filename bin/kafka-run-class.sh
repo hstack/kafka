@@ -23,10 +23,11 @@ fi
 base_dir=$(dirname $0)/..
 
 SCALA_VERSION=2.8.0
-
+CLASSPATH=$CLASSPATH:./project/boot/scala-${SCALA_VERSION}/lib/scala-library.jar
 # assume all dependencies have been packaged into one jar with sbt-assembly's task "assembly-package-dependency"
-for file in $base_dir/core/target/scala-2.8.0/*.jar;
+for file in $base_dir/core/target/scala-${SCALA_VERSION}/*.jar;
 do
+  echo $file
   CLASSPATH=$CLASSPATH:$file
 done
 
@@ -59,6 +60,7 @@ if [  $JMX_PORT ]; then
 fi
 
 if [ -z "$JAVA_HOME" ]; then
+  echo $JAVA_HOME
   JAVA="java"
 else
   JAVA="$JAVA_HOME/bin/java"
